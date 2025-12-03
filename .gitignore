@@ -42,3 +42,7 @@ lerna-debug.log*
 *.temp
 .cache/
 
+# MediaPipe model files (large files)
+demo/models/
+*.task
+
