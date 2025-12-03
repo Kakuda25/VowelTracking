@@ -94,11 +94,36 @@
     },
     {
       "id": 4,
+      "title": "モジュール詳細設計",
+      "description": "./description/4-モジュール詳細設計.md",
+      "status": "completed",
+      "created_at": "2025-12-03T10:00:00Z",
+      "updated_at": "2025-12-04T08:00:00Z",
+      "owner": "agent",
+      "priority": "high",
+      "tags": [
+        "design",
+        "architecture"
+      ],
+      "logs": [
+        {
+          "timestamp": "2025-12-04T08:00:00Z",
+          "author": "agent",
+          "message": "カメラ管理、MediaPipe統合、母音判定ロジックの詳細設計完了。アーキテクチャ、クラス設計、アルゴリズム、実装順序を定義"
+        }
+      ],
+      "artifacts": [
+        "order/description/4-モジュール詳細設計.md"
+      ],
+      "related": [3]
+    },
+    {
+      "id": 5,
       "title": "コアモジュール実装",
       "description": "母音検知ロジックの実装",
       "status": "not-started",
-      "created_at": "2025-12-03T10:00:00Z",
-      "updated_at": "2025-12-03T10:00:00Z",
+      "created_at": "2025-12-04T08:00:00Z",
+      "updated_at": "2025-12-04T08:00:00Z",
       "owner": "agent",
       "priority": "high",
       "tags": [
@@ -107,15 +132,15 @@
       ],
       "logs": [],
       "artifacts": [],
-      "related": [3]
+      "related": [4]
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "デモアプリ作成",
       "description": "Vanilla JSでのシンプルな1ページデモ",
       "status": "not-started",
-      "created_at": "2025-12-03T10:00:00Z",
-      "updated_at": "2025-12-03T10:00:00Z",
+      "created_at": "2025-12-04T08:00:00Z",
+      "updated_at": "2025-12-04T08:00:00Z",
       "owner": "agent",
       "priority": "medium",
       "tags": [
@@ -124,7 +149,7 @@
       ],
       "logs": [],
       "artifacts": [],
-      "related": [4]
+      "related": [5]
     }
   ]
 }
