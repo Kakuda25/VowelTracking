@@ -6,10 +6,18 @@
  */
 
 export { VowelTracker } from './core/VowelTracker';
+export { CameraManager } from './core/CameraManager';
+export { FaceLandmarkerWrapper } from './core/FaceLandmarkerWrapper';
+export { VowelDetector } from './core/VowelDetector';
+export { MovingAverageFilter } from './utils/smoothing';
+export { VowelTrackerError, ErrorCode } from './utils/errors';
 export type {
   Vowel,
   VowelDetectionCallback,
   VowelTrackerOptions,
   FaceLandmarkResult,
+  MouthFeatures,
+  VowelDetectionResult,
+  DebugInfo,
 } from './types';
 

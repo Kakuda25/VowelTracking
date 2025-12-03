@@ -121,34 +121,64 @@
       "id": 5,
       "title": "コアモジュール実装",
       "description": "母音検知ロジックの実装",
-      "status": "not-started",
+      "status": "completed",
       "created_at": "2025-12-04T08:00:00Z",
-      "updated_at": "2025-12-04T08:00:00Z",
+      "updated_at": "2025-12-04T09:00:00Z",
       "owner": "agent",
       "priority": "high",
       "tags": [
         "core",
         "mediapipe"
       ],
-      "logs": [],
-      "artifacts": [],
+      "logs": [
+        {
+          "timestamp": "2025-12-04T09:00:00Z",
+          "author": "agent",
+          "message": "Phase 1-4まで実装完了。ユーティリティ関数、コアコンポーネント、VowelTracker統合、テスト、デモアプリを実装"
+        }
+      ],
+      "artifacts": [
+        "module/utils/errors.ts",
+        "module/utils/geometry.ts",
+        "module/utils/smoothing.ts",
+        "module/core/CameraManager.ts",
+        "module/core/FaceLandmarkerWrapper.ts",
+        "module/core/VowelDetector.ts",
+        "module/core/VowelTracker.ts",
+        "module/types/index.ts",
+        "module/config/constants.ts",
+        "module/index.ts"
+      ],
       "related": [4]
     },
     {
       "id": 6,
       "title": "デモアプリ作成",
       "description": "Vanilla JSでのシンプルな1ページデモ",
-      "status": "not-started",
+      "status": "completed",
       "created_at": "2025-12-04T08:00:00Z",
-      "updated_at": "2025-12-04T08:00:00Z",
+      "updated_at": "2025-12-04T09:00:00Z",
       "owner": "agent",
       "priority": "medium",
       "tags": [
         "demo",
         "vanilla-js"
       ],
-      "logs": [],
-      "artifacts": [],
+      "logs": [
+        {
+          "timestamp": "2025-12-04T09:00:00Z",
+          "author": "agent",
+          "message": "デモアプリ（HTML/CSS/JS）とユニットテストを実装完了"
+        }
+      ],
+      "artifacts": [
+        "demo/index.html",
+        "demo/style.css",
+        "demo/main.js",
+        "tests/VowelDetector.test.ts",
+        "tests/geometry.test.ts",
+        "tests/smoothing.test.ts"
+      ],
       "related": [5]
     }
   ]

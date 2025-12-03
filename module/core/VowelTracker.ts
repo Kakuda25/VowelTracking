@@ -2,8 +2,14 @@ import type {
   VowelTrackerOptions,
   Vowel,
   VowelDetectionCallback,
+  DebugInfo,
 } from '../types';
 import { DEFAULT_CONFIG } from '../config/constants';
+import { CameraManager } from './CameraManager';
+import { FaceLandmarkerWrapper } from './FaceLandmarkerWrapper';
+import { VowelDetector } from './VowelDetector';
+import { MovingAverageFilter } from '../utils/smoothing';
+import { VowelTrackerError, ErrorCode } from '../utils/errors';
 
 /**
  * 母音検出トラッカー
@@ -12,10 +18,20 @@ import { DEFAULT_CONFIG } from '../config/constants';
  * リアルタイムで母音を検出します。
  */
 export class VowelTracker {
-  private options: Required<VowelTrackerOptions>;
+  private options: Required<Omit<VowelTrackerOptions, 'cameraConstraints'>> & {
+    cameraConstraints?: MediaStreamConstraints;
+  };
+  private cameraManager: CameraManager;
+  private faceLandmarkerWrapper: FaceLandmarkerWrapper;
+  private vowelDetector: VowelDetector;
   private isInitialized = false;
   private isRunning = false;
   private detectionTimer: number | null = null;
+  private lastDetectedVowel: Vowel | null = null;
+  private smoothingFilters: Map<string, MovingAverageFilter> = new Map();
+  private debugInfo: DebugInfo | null = null;
+  private frameCount = 0;
+  private lastFpsTime = performance.now();
 
   constructor(options: VowelTrackerOptions = {}) {
     this.options = {
@@ -25,7 +41,22 @@ export class VowelTracker {
         options.confidenceThreshold ?? DEFAULT_CONFIG.CONFIDENCE_THRESHOLD,
       detectionInterval:
         options.detectionInterval ?? DEFAULT_CONFIG.DETECTION_INTERVAL,
+      smoothingWindowSize: options.smoothingWindowSize ?? 5,
+      debug: options.debug ?? false,
+      cameraConstraints: options.cameraConstraints,
     };
+
+    this.cameraManager = new CameraManager();
+    this.faceLandmarkerWrapper = new FaceLandmarkerWrapper();
+    this.vowelDetector = new VowelDetector(this.options.confidenceThreshold);
+
+    if (this.options.smoothingWindowSize > 0) {
+      this.smoothingFilters.set('verticalOpening', new MovingAverageFilter(this.options.smoothingWindowSize));
+      this.smoothingFilters.set('horizontalWidth', new MovingAverageFilter(this.options.smoothingWindowSize));
+      this.smoothingFilters.set('aspectRatio', new MovingAverageFilter(this.options.smoothingWindowSize));
+      this.smoothingFilters.set('roundness', new MovingAverageFilter(this.options.smoothingWindowSize));
+      this.smoothingFilters.set('jawOpening', new MovingAverageFilter(this.options.smoothingWindowSize));
+    }
   }
 
   /**
@@ -36,8 +67,23 @@ export class VowelTracker {
       return;
     }
 
-    // TODO: MediaPipe FaceLandmarkerの初期化を実装
-    this.isInitialized = true;
+    try {
+      await this.faceLandmarkerWrapper.initialize(this.options.modelPath);
+      this.isInitialized = true;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * カメラを起動してビデオ要素に接続
+   * @param videoElement - ビデオ表示用のHTML要素
+   */
+  async startCamera(videoElement: HTMLVideoElement): Promise<void> {
+    await this.cameraManager.start(
+      videoElement,
+      this.options.cameraConstraints
+    );
   }
 
   /**
@@ -45,8 +91,9 @@ export class VowelTracker {
    */
   start(videoElement: HTMLVideoElement): void {
     if (!this.isInitialized) {
-      throw new Error(
-        'VowelTracker is not initialized. Call initialize() first.'
+      throw new VowelTrackerError(
+        'VowelTracker is not initialized. Call initialize() first.',
+        ErrorCode.NOT_INITIALIZED
       );
     }
 
@@ -55,7 +102,10 @@ export class VowelTracker {
     }
 
     this.isRunning = true;
-    // TODO: 検出ループの実装
+    this.lastDetectedVowel = null;
+    this.frameCount = 0;
+    this.lastFpsTime = performance.now();
+    this.startDetectionLoop(videoElement);
   }
 
   /**
@@ -72,6 +122,14 @@ export class VowelTracker {
     }
 
     this.isRunning = false;
+    this.lastDetectedVowel = null;
+  }
+
+  /**
+   * カメラを停止
+   */
+  stopCamera(): void {
+    this.cameraManager.stop();
   }
 
   /**
@@ -79,7 +137,88 @@ export class VowelTracker {
    */
   dispose(): void {
     this.stop();
+    this.stopCamera();
+    this.faceLandmarkerWrapper.dispose();
     this.isInitialized = false;
+    this.smoothingFilters.forEach((filter) => filter.reset());
+  }
+
+  /**
+   * デバッグ情報を取得
+   */
+  getDebugInfo(): DebugInfo | null {
+    return this.debugInfo;
+  }
+
+  /**
+   * 検出ループを開始
+   */
+  private startDetectionLoop(videoElement: HTMLVideoElement): void {
+    this.detectionTimer = window.setInterval(() => {
+      const startTime = performance.now();
+
+      try {
+        const landmarks = this.faceLandmarkerWrapper.detect(videoElement);
+        if (!landmarks) {
+          return;
+        }
+
+        const result = this.vowelDetector.detect(landmarks);
+
+        if (result.confidence < this.options.confidenceThreshold) {
+          return;
+        }
+
+        if (result.vowel !== this.lastDetectedVowel) {
+          this.lastDetectedVowel = result.vowel;
+          this.options.onVowelDetected(result.vowel);
+        }
+
+        if (this.options.debug) {
+          this.updateDebugInfo(
+            landmarks,
+            result,
+            performance.now() - startTime
+          );
+        }
+      } catch (error) {
+        if (this.options.debug) {
+          console.error('Detection error:', error);
+        }
+      }
+    }, this.options.detectionInterval);
+  }
+
+  /**
+   * デバッグ情報を更新
+   */
+  private updateDebugInfo(
+    landmarks: import('../types').FaceLandmarkResult,
+    result: import('../types').VowelDetectionResult,
+    processingTime: number
+  ): void {
+    this.frameCount++;
+    const now = performance.now();
+    const elapsed = now - this.lastFpsTime;
+
+    if (elapsed >= 1000) {
+      const fps = (this.frameCount * 1000) / elapsed;
+      this.frameCount = 0;
+      this.lastFpsTime = now;
+
+      this.debugInfo = {
+        fps: Math.round(fps),
+        landmarks: landmarks.landmarks,
+        mouthFeatures: result.features ?? {
+          verticalOpening: 0,
+          horizontalWidth: 0,
+          aspectRatio: 0,
+          roundness: 0,
+          jawOpening: 0,
+        },
+        detectionResult: result,
+        processingTime,
+      };
+    }
   }
 }
-

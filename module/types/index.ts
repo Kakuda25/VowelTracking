@@ -34,6 +34,23 @@ export interface VowelTrackerOptions {
    * @default 100
    */
   detectionInterval?: number;
+
+  /**
+   * カメラ制約
+   */
+  cameraConstraints?: MediaStreamConstraints;
+
+  /**
+   * 平滑化ウィンドウサイズ
+   * @default 5
+   */
+  smoothingWindowSize?: number;
+
+  /**
+   * デバッグモード
+   * @default false
+   */
+  debug?: boolean;
 }
 
 /**
@@ -44,3 +61,33 @@ export interface FaceLandmarkResult {
   faceBlendshapes?: Array<{ score: number; categoryName: string }>;
 }
 
+/**
+ * 口の特徴量
+ */
+export interface MouthFeatures {
+  verticalOpening: number;
+  horizontalWidth: number;
+  aspectRatio: number;
+  roundness: number;
+  jawOpening: number;
+}
+
+/**
+ * 母音検出結果
+ */
+export interface VowelDetectionResult {
+  vowel: Vowel;
+  confidence: number;
+  features?: MouthFeatures;
+}
+
+/**
+ * デバッグ情報
+ */
+export interface DebugInfo {
+  fps: number;
+  landmarks: Array<{ x: number; y: number; z: number }>;
+  mouthFeatures: MouthFeatures;
+  detectionResult: VowelDetectionResult;
+  processingTime: number;
+}

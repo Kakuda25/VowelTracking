@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VowelTracking - 母音検知デモ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>VowelTracking</h1>
+      <p class="subtitle">リアルタイム母音検知デモ</p>
+    </header>
+
+    <main>
+      <div class="video-section">
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+      </div>
+
+      <div class="control-section">
+        <button id="startBtn" class="btn btn-primary">開始</button>
+        <button id="stopBtn" class="btn btn-secondary" disabled>停止</button>
+      </div>
+
+      <div class="result-section">
+        <div class="vowel-display">
+          <div class="vowel-label">検出中の母音</div>
+          <div id="vowelResult" class="vowel-result">-</div>
+        </div>
+
+        <div class="status-section">
+          <div class="status-item">
+            <span class="status-label">状態:</span>
+            <span id="status" class="status-value">待機中</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="debugInfo" class="debug-info" style="display: none;">
+        <h3>デバッグ情報</h3>
+        <div id="debugContent"></div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="main.ts"></script>
+</body>
+</html>
+

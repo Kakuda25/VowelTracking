@@ -25,7 +25,8 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "download-model": "node scripts/download-model.js"
   },
   "keywords": [
     "mediapipe",
