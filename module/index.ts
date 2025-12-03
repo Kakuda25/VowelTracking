@@ -1,0 +1,15 @@
+/**
+ * VowelTracking - 母音判定モジュール
+ * 
+ * MediaPipe Tasks Visionを使用してリアルタイムで母音を検出します。
+ * 閉口、あ、い、う、え、おの6つの状態を判定できます。
+ */
+
+export { VowelTracker } from './core/VowelTracker';
+export type {
+  Vowel,
+  VowelDetectionCallback,
+  VowelTrackerOptions,
+  FaceLandmarkResult,
+} from './types';
+
